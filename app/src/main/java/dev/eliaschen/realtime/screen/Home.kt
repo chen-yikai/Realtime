@@ -1,5 +1,6 @@
 package dev.eliaschen.realtime.screen
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -20,27 +21,30 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import dev.eliaschen.realtime.LocalAnimated
 import dev.eliaschen.realtime.LocalNav
 import dev.eliaschen.realtime.LocalNetwork
+import dev.eliaschen.realtime.LocalSharedTransition
 import dev.eliaschen.realtime.component.CustomCard
 import dev.eliaschen.realtime.isoTimeFormatter
 import dev.eliaschen.realtime.model.Screen
-import dev.eliaschen.realtime.network.Time
 import dev.eliaschen.realtime.timeLeft
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(
+    ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
+    ExperimentalSharedTransitionApi::class
+)
 @Composable
 fun Home(modifier: Modifier = Modifier) {
     val network = LocalNetwork.current
     val nav = LocalNav.current
+    val sharedTransition = LocalSharedTransition.current
+    val animatedVisibility = LocalAnimated.current
     val times = network.times
 
     Scaffold(floatingActionButton = {
@@ -82,12 +86,25 @@ fun Home(modifier: Modifier = Modifier) {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column {
-                            Text(time.title, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                            Text(
-                                time.createdAt.isoTimeFormatter(),
-                                fontSize = 12.sp,
-                            )
+                        with(sharedTransition) {
+                            Column {
+                                Text(
+                                    time.title,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.sharedElement(
+                                        rememberSharedContentState("${time.id}_title"),
+                                        animatedVisibility
+                                    )
+                                )
+                                Text(
+                                    time.createdAt.isoTimeFormatter(),
+                                    fontSize = 12.sp, modifier = Modifier.sharedElement(
+                                        rememberSharedContentState("${time.id}_createdAt"),
+                                        animatedVisibility
+                                    )
+                                )
+                            }
                         }
                         Row(
                             verticalAlignment = Alignment.Bottom,

@@ -2,6 +2,7 @@ package dev.eliaschen.realtime.screen
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -36,18 +37,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import dev.eliaschen.realtime.LocalAnimated
 import dev.eliaschen.realtime.LocalNav
 import dev.eliaschen.realtime.LocalNetwork
+import dev.eliaschen.realtime.LocalSharedTransition
 import dev.eliaschen.realtime.component.CustomCard
+import dev.eliaschen.realtime.isoTimeFormatter
 import dev.eliaschen.realtime.model.Screen
 import dev.eliaschen.realtime.network.Countdown
 import kotlinx.coroutines.flow.collectLatest
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun CountdownDetail(modifier: Modifier = Modifier) {
     val nav = LocalNav.current
     val network = LocalNetwork.current
+    val sharedTransition = LocalSharedTransition.current
+    val animatedVisibility = LocalAnimated.current
     val time = network.times.first { it.id == nav.navExtra }
     var countdown by remember { mutableStateOf<Countdown?>(null) }
     var ended by remember { mutableStateOf(false) }
@@ -72,48 +78,66 @@ fun CountdownDetail(modifier: Modifier = Modifier) {
                 Icon(Icons.Default.ArrowBack, contentDescription = null)
             }
         }
-    }) { innerPadding ->
+    }, modifier = modifier) { innerPadding ->
         innerPadding
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(30.dp)
-            ) {
+            with(sharedTransition) {
                 Column(
+                    modifier = Modifier
+                        .padding(horizontal = 20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                    verticalArrangement = Arrangement.spacedBy(30.dp)
                 ) {
-                    Text(if (ended) "已結束" else "距離", fontWeight = FontWeight.Bold)
-                    Text(time.title, fontSize = 25.sp, fontWeight = FontWeight.Bold)
-                }
-                AnimatedVisibility(countdown != null) {
-                    val countdownParts = mapOf(
-                        "天" to countdown!!.day,
-                        "小時" to countdown!!.hour,
-                        "分鐘" to countdown!!.minute,
-                        "秒" to countdown!!.second
-                    )
-                    ended =
-                        countdownParts.filter { (unit, value) -> value == 0 }.size == countdownParts.size
-                    if (!ended) {
-                        CustomCard {
-                            Row(
-                                modifier = Modifier
-                                    .padding(20.dp)
-                                    .fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly
-                            ) {
-                                countdownParts.forEach { (unit, value) ->
-                                    CountdownLabel(value, unit)
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Text(if (ended) "已結束" else "距離", fontWeight = FontWeight.Bold)
+                        Text(
+                            time.title,
+                            fontSize = 25.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.sharedElement(
+                                rememberSharedContentState("${time.id}_title"),
+                                animatedVisibility
+                            )
+                        )
+                    }
+                    AnimatedVisibility(countdown != null) {
+                        val countdownParts = mapOf(
+                            "天" to countdown!!.day,
+                            "小時" to countdown!!.hour,
+                            "分鐘" to countdown!!.minute,
+                            "秒" to countdown!!.second
+                        )
+                        ended =
+                            countdownParts.filter { (unit, value) -> value == 0 }.size == countdownParts.size
+                        if (!ended) {
+                            CustomCard {
+                                Row(
+                                    modifier = Modifier
+                                        .padding(20.dp)
+                                        .fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceEvenly
+                                ) {
+                                    countdownParts.forEach { (unit, value) ->
+                                        CountdownLabel(value, unit)
+                                    }
                                 }
                             }
                         }
                     }
+                    Text(
+                        "建立於 " + time.createdAt.isoTimeFormatter(),
+                        modifier = Modifier.sharedElement(
+                            rememberSharedContentState("${time.id}_createdAt"),
+                            animatedVisibility
+                        )
+                    )
                 }
             }
         }
