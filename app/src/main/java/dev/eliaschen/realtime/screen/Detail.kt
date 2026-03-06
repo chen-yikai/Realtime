@@ -1,6 +1,14 @@
 package dev.eliaschen.realtime.screen
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -101,9 +109,7 @@ fun CountdownDetail(modifier: Modifier = Modifier) {
                                     .fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly
                             ) {
                                 countdownParts.forEach { (unit, value) ->
-                                    if (value != 0) {
-                                        CountdownLabel(value, unit)
-                                    }
+                                    CountdownLabel(value, unit)
                                 }
                             }
                         }
@@ -121,7 +127,15 @@ private fun CountdownLabel(value: Int, unit: String, modifier: Modifier = Modifi
         modifier = Modifier
             .widthIn(min = 60.dp)
     ) {
-        Text(value.toString().padStart(2, '0'), fontSize = 30.sp, fontWeight = FontWeight.Bold)
+        AnimatedContent(value, transitionSpec = {
+            (slideInVertically { it } + fadeIn(tween(500)) togetherWith slideOutVertically { -it } + fadeOut(
+                tween(100)
+            )).using(
+                SizeTransform(clip = false)
+            )
+        }) {
+            Text(it.toString().padStart(2, '0'), fontSize = 30.sp, fontWeight = FontWeight.Bold)
+        }
         Text(unit)
     }
 }
