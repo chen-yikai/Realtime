@@ -3,6 +3,7 @@ package dev.eliaschen.realtime.network
 import android.app.Application
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.referentialEqualityPolicy
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -20,6 +21,7 @@ class NetworkViewModel(private val context: Application) : NetworkClient(context
 
     init {
         refreshTimes()
+        listenUpdate()
     }
 
     fun refreshTimes() {
@@ -47,7 +49,6 @@ class NetworkViewModel(private val context: Application) : NetworkClient(context
         )
         try {
             val response = post<Time>("/api/countdowns", networkJson.encodeToString(payload))
-            refreshTimes()
             return response
         } catch (e: Exception) {
             reject(e.message)
@@ -63,7 +64,6 @@ class NetworkViewModel(private val context: Application) : NetworkClient(context
         viewModelScope.launch {
             try {
                 patch("/api/countdowns/$id", networkJson.encodeToString(payload))
-                refreshTimes()
             } catch (e: Exception) {
                 reject(e.message)
             }
@@ -95,5 +95,15 @@ class NetworkViewModel(private val context: Application) : NetworkClient(context
         awaitClose {
             socket.close(1000, "Exit")
         }
+    }
+
+    fun listenUpdate() {
+        val client = OkHttpClient()
+        val req = Request.Builder().url("$host/ws/realtime").build()
+        client.newWebSocket(req, object : WebSocketListener() {
+            override fun onMessage(webSocket: WebSocket, text: String) {
+                refreshTimes()
+            }
+        })
     }
 }

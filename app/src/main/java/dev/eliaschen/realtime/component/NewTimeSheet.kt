@@ -131,14 +131,14 @@ fun NewTimeSheet(editId: String, modifier: Modifier = Modifier, onDismiss: () ->
             }
             Spacer(Modifier.height(10.dp))
             Button(onClick = {
-                if (isEditMode) {
-                    network.updateTime(editId, title.text.toString(), datetime)
-                } else {
-                    scope.launch {
+                scope.launch {
+                    if (isEditMode) {
+                        network.updateTime(editId, title.text.toString(), datetime)
+                    } else {
                         network.createNewTime(title.text.toString(), datetime)
                     }
+                    onDismiss()
                 }
-                onDismiss()
             }, modifier = Modifier.fillMaxWidth()) {
                 Text(if (isEditMode) "Edit" else "Create")
             }
