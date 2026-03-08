@@ -24,7 +24,7 @@ private val LightColorScheme = lightColorScheme(
     primaryContainer = Color.White,
     secondary = Color.Gray,
     tertiary = Color(0xffFE7881),
-    surfaceVariant = Color(0xFF333333).copy(0.05f)
+    surfaceVariant = Color(0xFFF1F1F1)
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),

@@ -8,9 +8,11 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
-fun String.isoTimeFormatter(): String {
+fun String.isoTimeFormatter(
+    pattern: String = "yyyy/MM/dd hh:mm a",
+): String {
     val date = OffsetDateTime.parse(this).atZoneSameInstant(ZoneId.systemDefault())
-    val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd hh:mm a", Locale.TAIWAN)
+    val formatter = DateTimeFormatter.ofPattern(pattern, Locale.TAIWAN)
     return date.format(formatter)
 }
 
@@ -31,4 +33,9 @@ fun String.timeLeft(): Countdown {
         minute = minutes.toInt(),
         second = seconds.toInt()
     )
+}
+
+fun Long.formatMillis(pattern: String): String {
+    val formatter = DateTimeFormatter.ofPattern(pattern).withZone(ZoneId.systemDefault())
+    return formatter.format(Instant.ofEpochMilli(this))
 }

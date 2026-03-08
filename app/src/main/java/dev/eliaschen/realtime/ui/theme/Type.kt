@@ -1,6 +1,8 @@
 package dev.eliaschen.realtime.ui.theme
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -15,8 +17,8 @@ val Typography = Typography(
     bodyLarge = TextStyle(
         fontFamily = SerifFont,
         fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
+        fontSize = 20.sp,
+        lineHeight = 25.sp,
         letterSpacing = 0.5.sp
     ),
     titleLarge = TextStyle(

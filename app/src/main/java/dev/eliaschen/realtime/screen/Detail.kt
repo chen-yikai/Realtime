@@ -1,5 +1,6 @@
 package dev.eliaschen.realtime.screen
 
+import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -59,8 +60,12 @@ fun CountdownDetail(modifier: Modifier = Modifier) {
     var ended by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        network.getCountdownStream(time.id).collectLatest {
-            countdown = it
+        try {
+            network.getCountdownStream(time.id).collectLatest {
+                countdown = it
+            }
+        } catch (e: Exception) {
+            Log.e("Socket", e.message ?: "")
         }
     }
 
@@ -96,7 +101,11 @@ fun CountdownDetail(modifier: Modifier = Modifier) {
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        Text(if (ended) "已結束" else "距離", fontWeight = FontWeight.Bold)
+                        Text(
+                            if (ended) "已結束" else "距離",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp
+                        )
                         Text(
                             time.title,
                             fontSize = 25.sp,
@@ -132,9 +141,9 @@ fun CountdownDetail(modifier: Modifier = Modifier) {
                         }
                     }
                     Text(
-                        "建立於 " + time.createdAt.isoTimeFormatter(),
+                        "倒數時間 " + time.targetTime.isoTimeFormatter(), fontSize = 15.sp,
                         modifier = Modifier.sharedElement(
-                            rememberSharedContentState("${time.id}_createdAt"),
+                            rememberSharedContentState("${time.id}_targetTime"),
                             animatedVisibility
                         )
                     )
@@ -160,6 +169,6 @@ private fun CountdownLabel(value: Int, unit: String, modifier: Modifier = Modifi
         }) {
             Text(it.toString().padStart(2, '0'), fontSize = 30.sp, fontWeight = FontWeight.Bold)
         }
-        Text(unit)
+        Text(unit, fontSize = 15.sp)
     }
 }
