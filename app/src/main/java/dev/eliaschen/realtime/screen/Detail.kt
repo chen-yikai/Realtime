@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,7 +36,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextMotion
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.eliaschen.realtime.LocalAnimated
@@ -110,10 +113,12 @@ fun CountdownDetail(modifier: Modifier = Modifier) {
                             time.title,
                             fontSize = 25.sp,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.sharedElement(
-                                rememberSharedContentState("${time.id}_title"),
-                                animatedVisibility
-                            )
+                            modifier = Modifier
+                                .skipToLookaheadSize()
+                                .sharedBounds(
+                                    rememberSharedContentState("${time.id}_title"),
+                                    animatedVisibility
+                                )
                         )
                     }
                     AnimatedVisibility(countdown != null) {
@@ -142,7 +147,7 @@ fun CountdownDetail(modifier: Modifier = Modifier) {
                     }
                     Text(
                         "倒數時間 " + time.targetTime.isoTimeFormatter(), fontSize = 15.sp,
-                        modifier = Modifier.sharedElement(
+                        modifier = Modifier.sharedBounds(
                             rememberSharedContentState("${time.id}_targetTime"),
                             animatedVisibility
                         )

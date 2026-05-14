@@ -23,6 +23,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SwipeToDismissBox
@@ -37,7 +38,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextMotion
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.eliaschen.realtime.LocalAnimated
@@ -149,7 +152,6 @@ fun DismissableTimeItem(time: Time, editTime: () -> Unit) {
                 }
             }
         },
-        modifier = Modifier.animateContentSize()
     ) {
         TimeItem(time)
     }
@@ -180,14 +182,16 @@ private fun TimeItem(
                         time.title,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.sharedElement(
-                            rememberSharedContentState("${time.id}_title"),
-                            animatedVisibility
-                        )
+                        modifier = Modifier
+                            .skipToLookaheadSize()
+                            .sharedBounds(
+                                rememberSharedContentState("${time.id}_title"),
+                                animatedVisibility
+                            )
                     )
                     Text(
                         time.targetTime.isoTimeFormatter(),
-                        fontSize = 12.sp, modifier = Modifier.sharedElement(
+                        fontSize = 12.sp, modifier = Modifier.sharedBounds(
                             rememberSharedContentState("${time.id}_targetTime"),
                             animatedVisibility
                         )
